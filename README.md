@@ -43,6 +43,10 @@ officially supported by upstream developers.
   upgrading Fedora, and make sure the `fedora-45-x86_64` chroot is
   enabled in the COPR project settings. The two packages satisfy each
   other through the virtual `scx-scheds` / `scx-tools` names.
+  For one-off manual submissions, replicate the pipeline flags —
+  without `--enable-net` the build chroot has no network and
+  `cargo fetch --locked` in `%build` fails:
+  `copr-cli build --nowait --enable-net --chroot fedora-45-x86_64 skare1412/personal <srpm>`
 - Fedora 45 notes: the existing specs need no changes for F45 — they
   use `%{?dist}` and none of the macros removed/changed there
   (`%patchN`, `%gpgverify`, python macros; the `%cmake` cleanup only
