@@ -7,7 +7,9 @@
 #
 # Per-spec overrides: put a one-line file named <name>.chroots in
 # scripts/ with the chroots that package should build for. Skip a
-# package entirely with an empty .chroots file.
+# package entirely with an empty .chroots file. Extra copr-cli build
+# arguments (one per line) go in <name>.copr-args, e.g. --enable-net
+# for packages whose %build fetches from the network (cargo fetch).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -63,6 +65,12 @@ for name in "${built[@]}"; do
         for chroot in "${CHROOTS[@]}"; do
             args+=(--chroot "$chroot")
         done
+    fi
+    argsfile="$HERE/$name.copr-args"
+    if [ -s "$argsfile" ]; then
+        while IFS= read -r arg; do
+            [ -n "$arg" ] && args+=("$arg")
+        done < "$argsfile"
     fi
     echo "-- $name: copr-cli build ${args[*]}"
     copr-cli build "${args[@]}"
