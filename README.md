@@ -23,6 +23,7 @@ officially supported by upstream developers.
 | vksumi | [reakjra/vkSumi](https://github.com/reakjra/vkSumi) | upstream git tag tarball, spec based on upstream's own `packaging/vksumi.spec` | bump version, refresh sha256 comment |
 | scx-scheds-git | [sched-ext/scx](https://github.com/sched-ext/scx) | git snapshot of `main` (commit tarball), cargo workspace build; based on the CachyOS addons COPR spec, fixed for scx 1.1.4+ (needs clang >= 22) | bump `commit`/`commitdate` in the spec |
 | scx-tools-git | [sched-ext/scx-loader](https://github.com/sched-ext/scx-loader) | git snapshot of `main` (commit tarball), cargo build + `xtask install`; based on the CachyOS addons COPR spec | bump `commit`/`commitdate` in the spec |
+| jay | [mahkoh/jay](https://github.com/mahkoh/jay) | upstream git tag tarball (also published on crates.io as `jay-compositor`), cargo build | bump version, refresh sha256 comment |
 
 ## Notes
 
@@ -58,6 +59,12 @@ officially supported by upstream developers.
   For one-off manual submissions, replicate the pipeline flags —
   without `--enable-net` the build chroot has no network and
   `cargo fetch --locked` in `%build` fails:
+  `copr-cli build --nowait --enable-net --chroot fedora-45-x86_64 skare1412/personal <srpm>`
+- jay (Rust workspace, edition 2024; upstream asks for the latest
+  stable rustc) also needs network during `%build` (`cargo fetch
+  --locked`), so it is submitted with `--enable-net` via
+  `scripts/jay.copr-args` and pinned to the `fedora-45-x86_64` chroot
+  via `scripts/jay.chroots`. Manual one-off submission:
   `copr-cli build --nowait --enable-net --chroot fedora-45-x86_64 skare1412/personal <srpm>`
 - Fedora 45 notes: the existing specs need no changes for F45 — they
   use `%{?dist}` and none of the macros removed/changed there
