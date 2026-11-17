@@ -122,6 +122,8 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Sun Nov 17 2026 Noel Knubel - 9.3.8-0
+- Updated package
 * Sun Oct 25 2026 Noel Knubel - 9.3.6-5
 - Match the official rpm's curated runtime deps: require the
   dejavu/liberation font packages (needed for document rendering;
@@ -151,6 +153,3 @@ fi
 
 * Sun Oct 25 2026 Noel Knubel - 9.3.6-0
 - Initial repack of the official upstream rpm for COPR.
-
-* Sun Oct 25 2026 Noel Knubel - 9.3.8-0
-- Updated package
