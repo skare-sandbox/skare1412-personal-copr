@@ -14,6 +14,9 @@ officially supported by upstream developers.
 | heroic | [HeroicGamesLauncher](https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher) | repack of official upstream rpm | bump version, refresh sha256 comment |
 | msttcore-fonts-installer | [isboston/msttcore-fonts](https://github.com/isboston/msttcore-fonts) | repack of official upstream noarch rpm | bump version |
 | nextcloud-office | [nextcloud-releases/Office-DesktopEditors](https://github.com/nextcloud-releases/Office-DesktopEditors) | repack of official upstream rpm | bump version |
+| bazaar | [World/bazaar](https://gitlab.gnome.org/World/bazaar) | upstream GitLab release tag tarball, built from source with meson | bump version, refresh sha256 comment |
+| firebotv5 | [crowbartools/Firebot](https://github.com/crowbartools/Firebot) | repack of official upstream rpm | bump version, refresh sha256 comment |
+| libdex | [GNOME/libdex](https://gitlab.gnome.org/GNOME/libdex) | official GNOME release tarball, built from source with meson | bump version, refresh sha256 comment (companion for bazaar; F44 only ships 1.1~alpha) |
 | autohdr-vk | private | local tarball via `make-local-tarball.sh`, SRPM uploaded with copr-cli | re-run script, bump version |
 | pyrofling | [Themaister/pyrofling](https://github.com/Themaister/pyrofling) | local tarball via `make-pyrofling-tarball.sh` (snapshot, no upstream tags) | re-run script with new date, update Version |
 | volt-gui | [pythonlover02/volt-gui](https://github.com/pythonlover02/volt-gui) | repack of official release tarball (prebuilt, container-built) | bump version, refresh sha256 comment |
@@ -21,6 +24,15 @@ officially supported by upstream developers.
 
 ## Notes
 
+- bazaar needs `libdex >= 1.2.0`, which Fedora 44 does not ship; the
+  libdex companion package in this COPR fills that gap. The COPR
+  buildroot resolves it from `copr_base` — but only once a libdex
+  build has finished. On a fresh run, build libdex first and wait for
+  it to appear in the repo before submitting bazaar
+  (`build-and-submit.sh` submits bazaar after libdex via the
+  `after:libdex` line in `scripts/bazaar.chroots`, but `--nowait`
+  still means a concurrent first-time build can race; for the first
+  build submit libdex on its own).
 - Packages whose source cannot be fetched by copr (private repos,
   git submodules, local checkouts) are built as SRPMs locally and
   uploaded with `copr-cli build <project> <srpm>`.
@@ -46,7 +58,10 @@ officially supported by upstream developers.
   `copr-cli build --nowait` per SRPM. One failing spec doesn't
   abort the rest. Optional per-package chroots: put them (one per
   line) in `scripts/<name>.chroots`; an empty file skips the
-  package. Without overrides, chroots come from the arguments or
+  package. Submission order: an `after:<other-package>` line in a
+  `.chroots` file defers that package until `<other-package>` has
+  been submitted in the same run (used for bazaar after libdex).
+  Without overrides, chroots come from the arguments or
   the copr project defaults. `COPR_PROJECT` and `SPECS_DIR`
   environment variables override the defaults
   (`skare1412/personal`, `rpmbuild/SPECS`).

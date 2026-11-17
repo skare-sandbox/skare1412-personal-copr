@@ -8,6 +8,14 @@
 # Per-spec overrides: put a one-line file named <name>.chroots in
 # scripts/ with the chroots that package should build for. Skip a
 # package entirely with an empty .chroots file.
+#
+# Build order: put "after:<other-package>" lines into a <name>.chroots
+# file (mixed with chroot lines is fine) to submit that package only
+# after <other-package> has been submitted; submission still doesn't
+# wait for the build to finish, so use this for packages that need a
+# companion package to be *in the repo* (builddep resolves against the
+# copr_base repo at build time). For a first-time companion build,
+# build the companion separately first (see README).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -46,19 +54,20 @@ if [ ${#built[@]} -eq 0 ]; then
     exit 1
 fi
 
-echo "== Submitting to COPR ($COPR_PROJECT) =="
-for name in "${built[@]}"; do
+submit_one() {
+    local name="$1"
+    local srpm
     srpm="$(ls -t "$HOME"/rpmbuild/SRPMS/"$name"-*.src.rpm 2>/dev/null | head -n1)"
     if [ -z "$srpm" ]; then
         echo "-- $name: no SRPM found, skipping submission" >&2
-        continue
+        return 1
     fi
-    args=(--nowait "$COPR_PROJECT" "$srpm")
-    override="$HERE/$name.chroots"
+    local args=(--nowait "$COPR_PROJECT" "$srpm")
+    local override="$HERE/$name.chroots"
     if [ -s "$override" ]; then
-        while IFS= read -r chroot; do
-            [ -n "$chroot" ] && args+=(--chroot "$chroot")
-        done < "$override"
+        while IFS= read -r line; do
+            [ -n "$line" ] && args+=(--chroot "$line")
+        done < <(grep -v '^after:' "$override" 2>/dev/null || true)
     elif [ ${#CHROOTS[@]} -gt 0 ]; then
         for chroot in "${CHROOTS[@]}"; do
             args+=(--chroot "$chroot")
@@ -66,6 +75,46 @@ for name in "${built[@]}"; do
     fi
     echo "-- $name: copr-cli build ${args[*]}"
     copr-cli build "${args[@]}"
+}
+
+echo "== Submitting to COPR ($COPR_PROJECT) =="
+submitted=()
+remaining=("${built[@]}")
+progress=1
+while [ ${#remaining[@]} -gt 0 ] && [ "$progress" -eq 1 ]; do
+    progress=0
+    next=()
+    for name in "${remaining[@]}"; do
+        deps=()
+        if [ -s "$HERE/$name.chroots" ]; then
+            while IFS= read -r dep; do
+                [ -n "$dep" ] && deps+=("$dep")
+            done < <(grep '^after:' "$HERE/$name.chroots" 2>/dev/null | sed 's/^after://' || true)
+        fi
+        ready=1
+        for dep in "${deps[@]}"; do
+            if [[ ! " ${submitted[*]} " == *" $dep "* ]]; then
+                ready=0
+                if [[ " ${remaining[*]} " == *" $dep "* ]]; then
+                    echo "-- $name: waiting for $dep (after: order)"
+                else
+                    echo "-- $name: dependency $dep not built this run and not in submission set; submitting anyway" >&2
+                fi
+            fi
+        done
+        if [ "$ready" -eq 1 ]; then
+            submit_one "$name" || true
+            submitted+=("$name")
+            progress=1
+        else
+            next+=("$name")
+        fi
+    done
+    remaining=("${next[@]}")
 done
+if [ ${#remaining[@]} -gt 0 ]; then
+    echo "Circular after: dependencies among: ${remaining[*]}" >&2
+    exit 1
+fi
 
 echo "== Done =="
