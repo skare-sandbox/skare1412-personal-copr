@@ -73,6 +73,12 @@ submit_one() {
             args+=(--chroot "$chroot")
         done
     fi
+    argsfile="$HERE/$name.copr-args"
+    if [ -s "$argsfile" ]; then
+        while IFS= read -r arg; do
+            [ -n "$arg" ] && args+=("$arg")
+        done < "$argsfile"
+    fi
     echo "-- $name: copr-cli build ${args[*]}"
     copr-cli build "${args[@]}"
 }
