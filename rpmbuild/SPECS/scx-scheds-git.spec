@@ -9,8 +9,8 @@
 # The build needs network access (cargo fetch --locked); the pipeline
 # submits this package with --enable-net via scripts/scx-scheds-git.copr-args.
 
-%global commitdate 20261108
-%global commit c0347f11c377181c31eb3bfbf5810719438a2541
+%global commitdate 20261113
+%global commit 8820f95ed56da7bae2966477fa457cb488a7207d
 %global revision 1
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 

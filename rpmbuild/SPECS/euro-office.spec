@@ -18,8 +18,8 @@
 %global __provides_exclude ^lib(Qt6.*|clntsh|mimerapi)\\.so.*$
 
 Name:           euro-office
-Version:        9.3.6
-Release:        5%{?dist}
+Version:        9.3.8
+Release:        0%{?dist}
 Summary:        Euro-Office Desktop Editors (community build)
 
 License:        AGPL-3.0-only
@@ -142,3 +142,6 @@ fi
 
 * Sun Oct 25 2026 Noel Knubel - 9.3.6-0
 - Initial repack of the official upstream rpm for COPR.
+
+* Sun Oct 25 2026 Noel Knubel - 9.3.8-0
+- Updated package
