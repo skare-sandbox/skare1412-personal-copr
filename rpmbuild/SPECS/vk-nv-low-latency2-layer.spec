@@ -2,12 +2,12 @@
 # never fetch it from GitHub (release URLs of private repos require auth):
 # Source0 stays a plain filename, fed from local/copr storage.
 #   scripts/make-vk-nv-low-latency2-layer-tarball.sh <version>
-#     SSH-clones the repo and `git archive`s tag v<version> with the
-#     top-level prefix %{name}-%{version}/ (must match the default %prep dir).
-#   Submit either as a locally built SRPM (`copr-cli build <project> <srpm>`)
+#     SSH-clones the repo and git-archives tag v<version> with the top-level
+#     prefix <name>-<version>/ (the default dir the setup macro cds into).
+#   Submit either as a locally built SRPM (copr-cli build <project> <srpm>)
 #   or by pushing spec + tarball to the package's copr dist-git repo and
-#   listing the tarball in `sources` (copr fetches it from its own storage).
-# Local test build: rpmbuild -ba with Source0 present in %_sourcedir.
+#   listing the tarball in "sources" (copr fetches it from its own storage).
+# Local test build: rpmbuild -ba with Source0 in the rpmbuild SOURCES dir.
 #
 # The layer installs as an opt-in implicit layer: it only activates when
 # VK_NV_LOW_LATENCY2_ENABLE=1 is set in the environment.
@@ -38,11 +38,11 @@ VK_NV_LOW_LATENCY2_FRAME_LIMIT_FPS (frame rate cap), VK_NV_LOW_LATENCY2_HIDE_FOR
 VK_NV_LOW_LATENCY2_DEBUG (logging).
 
 %prep
-%autosetup -q
+%setup -q
 
 %build
-# %cmake sets the prefix to /usr; pass the Fedora libdir explicitly so the
-# generated layer manifest bakes /usr/lib64/... as library_path.
+# The cmake macro sets the prefix to /usr; pass the Fedora libdir explicitly
+# so the generated layer manifest bakes /usr/lib64/... as library_path.
 %cmake -DCMAKE_INSTALL_LIBDIR=%{_libdir}
 %cmake_build
 
@@ -57,7 +57,7 @@ VK_NV_LOW_LATENCY2_DEBUG (logging).
 %changelog
 * Fri Nov 20 2026 Noel Knubel <skaredogged97@pm.me> - 0.1.1-1
 - Update to upstream v0.1.1 (tarball built from tag v0.1.1)
-- Fix %prep: drop the -n override; the tarball top dir is %{name}-%{version}
+- Fix prep: drop the -n override so the default name-version dir is used
 
 * Thu Nov 19 2026 Vibe <vibe@mistral.ai> - 0.1.0-1
 - Initial package: opt-in implicit VK_NV_low_latency2 layer ported from radv
