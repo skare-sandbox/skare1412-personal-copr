@@ -18,6 +18,7 @@ officially supported by upstream developers.
 | firebotv5 | [crowbartools/Firebot](https://github.com/crowbartools/Firebot) | repack of official upstream rpm | bump version, refresh sha256 comment |
 | libdex | [GNOME/libdex](https://gitlab.gnome.org/GNOME/libdex) | official GNOME release tarball, built from source with meson | bump version, refresh sha256 comment (companion for bazaar; F44 only ships 1.1~alpha) |
 | autohdr-vk | private | local tarball via `make-local-tarball.sh`, SRPM uploaded with copr-cli | re-run script, bump version |
+| vk-nv-low-latency2-layer | private (skare-sandbox/VK_NV_low_latency2_layer) | local tarball from the release tag via `scripts/make-vk-nv-low-latency2-layer-tarball.sh`, SRPM uploaded with copr-cli | re-run script with new version, bump version |
 | pyrofling | [Themaister/pyrofling](https://github.com/Themaister/pyrofling) | local tarball via `make-pyrofling-tarball.sh` (snapshot, no upstream tags) | re-run script with new date, update Version |
 | volt-gui | [pythonlover02/volt-gui](https://github.com/pythonlover02/volt-gui) | repack of official release tarball (prebuilt, container-built) | bump version, refresh sha256 comment |
 | vksumi | [reakjra/vkSumi](https://github.com/reakjra/vkSumi) | upstream git tag tarball, spec based on upstream's own `packaging/vksumi.spec` | bump version, refresh sha256 comment |
@@ -37,7 +38,13 @@ officially supported by upstream developers.
   build submit libdex on its own).
 - Packages whose source cannot be fetched by copr (private repos,
   git submodules, local checkouts) are built as SRPMs locally and
-  uploaded with `copr-cli build <project> <srpm>`.
+  uploaded with `copr-cli build <project> <srpm>`. Keep `Source0` a
+  plain filename in that case: release URLs of private GitHub repos
+  require auth, so copr can never download them. Alternatively, push
+  the tarball into the package's copr dist-git repo and list it in
+  `sources` — copr then fetches it from its own storage
+  (`copr-dist-git.fedorainfracloud.org/repo/pkgs/...`), which is what
+  a plain dist-git build does.
 - Most repack specs carry a `sha256(Source0) = ...` comment near
   Source0; refresh it with `sha256sum` whenever Source0 changes.
 - Vulkan layer packages (pyrofling, volt-gui, vksumi, autohdr-vk)
