@@ -14,7 +14,7 @@
 
 Name:           vk-nv-low-latency2-layer
 Version:        0.1.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        VK_NV_low_latency2 (NVIDIA Reflex low latency) as an opt-in implicit Vulkan layer
 
 License:        MIT
@@ -41,9 +41,10 @@ VK_NV_LOW_LATENCY2_DEBUG (logging).
 %setup -q
 
 %build
-# The cmake macro sets the prefix to /usr; pass the Fedora libdir explicitly
-# so the generated layer manifest bakes /usr/lib64/... as library_path.
-%cmake -DCMAKE_INSTALL_LIBDIR=%{_libdir}
+# Pass the relative libdir name (lib64), not the absolute path: the project
+# builds the manifest library_path from prefix + CMAKE_INSTALL_LIBDIR, and an
+# absolute value made it /usr//usr/lib64/... instead of /usr/lib64/...
+%cmake -DCMAKE_INSTALL_LIBDIR=%{_lib}
 %cmake_build
 
 %install
@@ -55,6 +56,10 @@ VK_NV_LOW_LATENCY2_DEBUG (logging).
 %{_datadir}/vulkan/implicit_layer.d/VkLayer_NV_low_latency2.json
 
 %changelog
+* Fri Nov 20 2026 Noel Knubel <skaredogged97@pm.me> - 0.1.1-2
+- Fix library_path baked into the layer manifest: pass the relative libdir
+  (lib64) to cmake so prefix+libdir resolves to /usr/lib64, not /usr//usr/lib64
+
 * Fri Nov 20 2026 Noel Knubel <skaredogged97@pm.me> - 0.1.1-1
 - Update to upstream v0.1.1 (tarball built from tag v0.1.1)
 - Fix prep: drop the -n override so the default name-version dir is used
